@@ -1,10 +1,7 @@
-open Printf
-open ExtLib
+open! ExtLib
 
 module MyGraphics = struct
   type t = {
-    width : int;
-    height : int;
     mutable x1 : float;
     mutable x2 : float;
     mutable y1 : float;
@@ -12,13 +9,13 @@ module MyGraphics = struct
   }
 
   let to_int_position self x y =
-    let nx = int_of_float ((x -. self.x1) /. (self.x2 -. self.x1) *. float self.width) in
-    let ny = int_of_float ((y -. self.y1) /. (self.y2 -. self.y1) *. float self.height) in
+    let nx = int_of_float ((x -. self.x1) /. (self.x2 -. self.x1) *. float (Graphics.size_x ())) in
+    let ny = int_of_float ((y -. self.y1) /. (self.y2 -. self.y1) *. float (Graphics.size_y ())) in
     (nx, ny)
 
-  let init ?(x1 = 0.0) ?(x2 = 1.0) ?(y1 = 0.0) ?(y2 = 1.0) width height =
-    Graphics.open_graph (sprintf " %dx%d" width height);
-    { width; height; x1; x2; y1; y2 }
+  let init ?(x1 = 0.0) ?(x2 = 1.0) ?(y1 = 0.0) ?(y2 = 1.0) geometry =
+    Graphics.open_graph (" " ^ geometry);
+    { x1; x2; y1; y2 }
 
   let set_x1x2y1y2 self ~x1 ~x2 ~y1 ~y2 =
     self.x1 <- x1;
@@ -58,7 +55,20 @@ let get_minmax ary =
   (xmin, xmax, ymin, ymax)
 
 let () =
-  let g = MyGraphics.init 640 400 in
+  let opt_geometry = ref "" in
+  let opt_rest_args = ref [] in
+  let speclist = [
+    ("-geometry", Arg.Set_string opt_geometry, "geometry");
+    ("--", Arg.Rest (fun s -> opt_rest_args := !opt_rest_args @ [s]), "rest");
+  ] in
+  let anon_args = ref [] in
+  Arg.parse
+    speclist
+    (fun s ->
+       anon_args := !anon_args @ [s])
+    "Usage:";
+
+  let g = MyGraphics.init !opt_geometry in
   Graphics.auto_synchronize false;
   let rex = Pcre.regexp "[ \t]+" in
   let ary = input_lines stdin
