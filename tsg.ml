@@ -1,3 +1,4 @@
+open Printf
 open! ExtLib
 
 module MyGraphics = struct
@@ -12,6 +13,11 @@ module MyGraphics = struct
     let nx = int_of_float ((x -. self.x1) /. (self.x2 -. self.x1) *. float (Graphics.size_x ())) in
     let ny = int_of_float ((y -. self.y1) /. (self.y2 -. self.y1) *. float (Graphics.size_y ())) in
     (nx, ny)
+
+  let to_float_position self nx ny =
+    let x = self.x1 +. float nx *. (self.x2 -. self.x1) /. float (Graphics.size_x ()) in
+    let y = self.y1 +. float ny *. (self.y2 -. self.y1) /. float (Graphics.size_y ()) in
+    (x, y)
 
   let init ?(x1 = 0.0) ?(x2 = 1.0) ?(y1 = 0.0) ?(y2 = 1.0) geometry =
     Graphics.open_graph (" " ^ geometry);
@@ -92,8 +98,14 @@ let () =
   MyGraphics.draw_poly_line g ary;
   Graphics.synchronize ();
   while true do
-    let status = Graphics.wait_next_event [Graphics.Key_pressed] in
-    match status.Graphics.key with
+    let status = Graphics.wait_next_event [Graphics.Key_pressed; Graphics.Button_down] in
+    begin match status.Graphics.key with
     | 'q' | 'Q' -> exit 0
     | _ -> ()
+    end;
+    if status.Graphics.button then begin
+      let x, y = MyGraphics.to_float_position g status.Graphics.mouse_x status.Graphics.mouse_y in
+      printf "%g, %g\n" x y;
+      flush stdout
+    end
   done
