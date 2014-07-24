@@ -1,5 +1,5 @@
-RESULT = a.out
-SOURCES = a.ml
+RESULT = tsg
+SOURCES = tsg.ml
 PACKS = pcre,graphics,extlib
 INCDIRS =
 LIBS =
