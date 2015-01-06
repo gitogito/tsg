@@ -55,7 +55,7 @@ let get_minmax ary =
          let ymin = if y < ymin then y else ymin in
          let ymax = if y > ymax then y else ymax in
          (xmin, xmax, ymin, ymax))
-      (max_float, min_float, max_float, min_float)
+      (max_float, -.max_float, max_float, -.max_float)
       ary
   in
   (xmin, xmax, ymin, ymax)
