@@ -136,9 +136,9 @@ let () =
   MyGraphics.set_x1x2y1y2
     g
     ~x1:(xmin -. (xmax -. xmin) /. 10.0)
-    ~x2:(xmax +. (xmax -. xmin) /. 10.0)
+    ~x2:(xmax +. (xmax -. xmin) /. 20.0)
     ~y1:(ymin -. (ymax -. ymin) /. 10.0)
-    ~y2:(ymax +. (ymax -. ymin) /. 10.0);
+    ~y2:(ymax +. (ymax -. ymin) /. 20.0);
   draw_frame g xmin xmax xstep ymin ymax ystep;
   Graphics.set_color (Graphics.rgb 0 0 0);
   MyGraphics.draw_poly_line g ary;
