@@ -57,6 +57,8 @@ let get_axis min max =
   let right = if right < max then right +. base else right in
   if left > min then failwith "bug (left > min)";
   if right < max then failwith "bug (right < max)";
+  let m = truncate ((left -. right) /. base) in
+  let base = if m < 5 then base /. 2.0 else base in
   (left, right, base)
 
 let get_axis_xy ary =
