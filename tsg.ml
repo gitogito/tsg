@@ -100,7 +100,7 @@ let draw_frame g xmin xmax xstep ymin ymax ystep =
     let s = sprintf "%g" y in
     let tsx, tsy = Graphics.text_size s in
     MyGraphics.moveto g xmin y;
-    Graphics.rmoveto (-tsx * 2) (-tsy / 2);
+    Graphics.rmoveto (-10 - tsx) (-tsy / 2);
     Graphics.set_color (Graphics.rgb 0 0 0);
     Graphics.draw_string s
   done
