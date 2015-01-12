@@ -46,7 +46,20 @@ module MyGraphics = struct
     Graphics.draw_poly_line ary
 end
 
-let get_minmax ary =
+let get_axis min max =
+  if min >= max then failwith "min >= max";
+  let diff = max -. min in
+  let n = truncate (log10 diff) in
+  let base = 10.0 ** float n in
+  let left = float (truncate (min /. base)) *. base in
+  let left = if left > min then left -. base else left in
+  let right = float (truncate (max /. base)) *. base in
+  let right = if right < max then right +. base else right in
+  if left > min then failwith "bug (left > min)";
+  if right < max then failwith "bug (right < max)";
+  (left, right, base)
+
+let get_axis_xy ary =
   let xmin, xmax, ymin, ymax =
     Array.fold_left
       (fun (xmin, xmax, ymin, ymax) (x, y) ->
@@ -58,7 +71,39 @@ let get_minmax ary =
       (max_float, -.max_float, max_float, -.max_float)
       ary
   in
-  (xmin, xmax, ymin, ymax)
+  let xmin, xmax, xstep = get_axis xmin xmax in
+  let ymin, ymax, ystep = get_axis ymin ymax in
+  (xmin, xmax, xstep, ymin, ymax, ystep)
+
+let draw_frame g xmin xmax xstep ymin ymax ystep =
+  let nx = truncate ((xmax -. xmin) /. xstep) in
+  let ny = truncate ((ymax -. ymin) /. ystep) in
+  for i = 0 to nx do
+    let x = xmin +. xstep *. float i in
+    MyGraphics.moveto g x ymin;
+    Graphics.set_color (Graphics.rgb 210 210 210);
+    MyGraphics.lineto g x ymax;
+
+    let s = sprintf "%g" x in
+    let tsx, tsy = Graphics.text_size s in
+    MyGraphics.moveto g x ymin;
+    Graphics.rmoveto (-tsx / 2) (-tsy * 2);
+    Graphics.set_color (Graphics.rgb 0 0 0);
+    Graphics.draw_string s
+  done;
+  for i = 0 to ny do
+    let y = ymin +. ystep *. float i in
+    MyGraphics.moveto g xmin y;
+    Graphics.set_color (Graphics.rgb 210 210 210);
+    MyGraphics.lineto g xmax y;
+
+    let s = sprintf "%g" y in
+    let tsx, tsy = Graphics.text_size s in
+    MyGraphics.moveto g xmin y;
+    Graphics.rmoveto (-tsx * 2) (-tsy / 2);
+    Graphics.set_color (Graphics.rgb 0 0 0);
+    Graphics.draw_string s
+  done
 
 let () =
   let opt_geometry = ref "" in
@@ -85,15 +130,14 @@ let () =
                     | [x; y] -> (x, y)
                     | _ -> failwith "invalid input")
             |> Array.of_enum in
-  let xmin, xmax, ymin, ymax = get_minmax ary in
+  let xmin, xmax, xstep, ymin, ymax, ystep = get_axis_xy ary in
   MyGraphics.set_x1x2y1y2
     g
     ~x1:(xmin -. (xmax -. xmin) /. 10.0)
     ~x2:(xmax +. (xmax -. xmin) /. 10.0)
     ~y1:(ymin -. (ymax -. ymin) /. 10.0)
     ~y2:(ymax +. (ymax -. ymin) /. 10.0);
-  Graphics.set_color (Graphics.rgb 210 210 210);
-  MyGraphics.draw_poly g [| (xmin, ymin); (xmax, ymin); (xmax, ymax); (xmin, ymax) |];
+  draw_frame g xmin xmax xstep ymin ymax ystep;
   Graphics.set_color (Graphics.rgb 0 0 0);
   MyGraphics.draw_poly_line g ary;
   Graphics.synchronize ();
