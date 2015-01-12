@@ -4,3 +4,5 @@ tsg
 *.cmi
 *.cmo
 *.cmt
+*.cmx
+*.o
