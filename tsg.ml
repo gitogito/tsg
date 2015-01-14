@@ -78,8 +78,8 @@ let get_axis_xy ary =
   (xmin, xmax, xstep, ymin, ymax, ystep)
 
 let draw_frame g xmin xmax xstep ymin ymax ystep =
-  let nx = truncate ((xmax -. xmin) /. xstep) in
-  let ny = truncate ((ymax -. ymin) /. ystep) in
+  let nx = truncate ((xmax -. xmin) /. xstep +. 0.5) in
+  let ny = truncate ((ymax -. ymin) /. ystep +. 0.5) in
   for i = 0 to nx do
     let x = xmin +. xstep *. float i in
     MyGraphics.moveto g x ymin;
