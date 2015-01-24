@@ -69,12 +69,6 @@ let get_axis min max =
   let k = (max -. min) /. (b -. a) in
   if k > 0.5 then begin
     adjust_base a b (base /. 10.0)
-  end else if k > 0.3 then begin
-    let a, b, base = get_axis_with_n min max (n - 1) in
-    adjust_base a b base
-  end else if k > 0.2 then begin
-    let a, b, base = get_axis_with_n min max (n - 1) in
-    adjust_base a b base
   end else begin
     let a, b, base = get_axis_with_n min max (n - 1) in
     adjust_base a b base
