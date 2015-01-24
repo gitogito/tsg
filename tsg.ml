@@ -46,20 +46,39 @@ module MyGraphics = struct
     Graphics.draw_poly_line ary
 end
 
-let get_axis min max =
-  if min >= max then failwith "min >= max";
-  let diff = max -. min in
-  let n = truncate (log10 diff) in
+let get_axis_with_n min max n =
   let base = 10.0 ** float n in
-  let left = float (truncate (min /. base)) *. base in
-  let left = if left > min then left -. base else left in
-  let right = float (truncate (max /. base)) *. base in
-  let right = if right < max then right +. base else right in
-  if left > min then failwith "bug (left > min)";
-  if right < max then failwith "bug (right < max)";
-  let m = truncate ((right -. left) /. base) in
-  let base = if m < 5 then base /. 2.0 else base in
-  (left, right, base)
+  let na = floor (min /. base *. (1.0 +. 1e-9)) in      (* multiply a number slightly beyond 1.0 to avoid an error *)
+  let nb = ceil (max /. base *. (1.0 -. 1e-9)) in       (* multiply a number slightly below 1.0 to avoid an error *)
+  let a = base *. na in
+  let b = base *. nb in
+  (a, b, base)
+
+let rec adjust_base a b base =
+  let k = (b -. a) /. base in
+  if k > 10.0 then
+    adjust_base a b (base *. 2.0)
+  else if k >= 4.0 then
+    (a, b, base)
+  else
+    adjust_base a b (base /. 2.0)
+
+let get_axis min max =
+  let n = truncate (ceil (log10 (max -. min))) in
+  let a, b, base = get_axis_with_n min max n in
+  let k = (max -. min) /. (b -. a) in
+  if k > 0.5 then begin
+    adjust_base a b (base /. 10.0)
+  end else if k > 0.3 then begin
+    let a, b, base = get_axis_with_n min max (n - 1) in
+    adjust_base a b base
+  end else if k > 0.2 then begin
+    let a, b, base = get_axis_with_n min max (n - 1) in
+    adjust_base a b base
+  end else begin
+    let a, b, base = get_axis_with_n min max (n - 1) in
+    adjust_base a b base
+  end
 
 let get_axis_xy ary =
   let xmin, xmax, ymin, ymax =
