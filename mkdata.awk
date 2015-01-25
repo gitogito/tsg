@@ -1,7 +1,11 @@
 BEGIN {
     for (i = 0; i <= 1000; i++) {
         x = i / 1000.0 * 30.0
-        y = exp(-x/10)*cos(x)
-        printf "%g\t%g\n", x, y
+        printf "%g", x
+        for (j = 0; j < 16; j++) {
+            y = (1.0 + j / 10) * exp(-x/10)*cos(x)
+            printf "\t%g", y
+        }
+        printf "\n"
     }
 }

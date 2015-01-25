@@ -46,6 +46,24 @@ module MyGraphics = struct
     Graphics.draw_poly_line ary
 end
 
+let colors =
+  let open Graphics in
+  [|
+    black;
+    green;
+    blue;
+    yellow;
+    cyan;
+    magenta;
+    red;
+  |]
+
+let array_combine aary bary =
+  let na = Array.length aary in
+  let nb = Array.length bary in
+  if na <> nb then raise (invalid_arg "array_combine");
+  Array.mapi (fun i a -> (a, bary.(i))) aary
+
 let get_axis_with_n min max n =
   let base = 10.0 ** float n in
   let na = floor (min /. base *. (1.0 +. 1e-9)) in      (* multiply a number slightly beyond 1.0 to avoid an error *)
@@ -74,17 +92,28 @@ let get_axis min max =
     adjust_base a b base
   end
 
-let get_axis_xy ary =
-  let xmin, xmax, ymin, ymax =
+let get_axis_xy xary ysary =
+  let xmin, xmax =
     Array.fold_left
-      (fun (xmin, xmax, ymin, ymax) (x, y) ->
+      (fun (xmin, xmax) x ->
          let xmin = if x < xmin then x else xmin in
          let xmax = if x > xmax then x else xmax in
-         let ymin = if y < ymin then y else ymin in
-         let ymax = if y > ymax then y else ymax in
-         (xmin, xmax, ymin, ymax))
-      (max_float, -.max_float, max_float, -.max_float)
-      ary
+         (xmin, xmax))
+      (max_float, -.max_float)
+      xary
+  in
+  let ymin, ymax =
+    Array.fold_left
+      (fun (ymin, ymax) rows ->
+         Array.fold_left
+           (fun (ymin, ymax) y ->
+              let ymin = if y < ymin then y else ymin in
+              let ymax = if y > ymax then y else ymax in
+              (ymin, ymax))
+           (ymin, ymax)
+           rows)
+      (max_float, -.max_float)
+     ysary
   in
   let xmin, xmax, xstep = get_axis xmin xmax in
   let ymin, ymax, ystep = get_axis ymin ymax in
@@ -136,16 +165,12 @@ let () =
 
   let g = MyGraphics.init !opt_geometry in
   Graphics.auto_synchronize false;
-  let rex = Pcre.regexp "[ \t]+" in
-  let ary = input_lines stdin
-            |> Enum.map
-                 (fun s -> 
-                    let xy = Pcre.split ~rex s |> List.map float_of_string in
-                    match xy with
-                    | [x; y] -> (x, y)
-                    | _ -> failwith "invalid input")
-            |> Array.of_enum in
-  let xmin, xmax, xstep, ymin, ymax, ystep = get_axis_xy ary in
+  let ary = Csv.load_in ~separator:'\t' stdin |> Csv.transpose |> Csv.to_array |>
+            Array.map (Array.map float_of_string)
+  in
+  let xary = ary.(0) in
+  let ysary = Array.sub ary 1 (Array.length ary - 1) in
+  let xmin, xmax, xstep, ymin, ymax, ystep = get_axis_xy xary ysary in
   MyGraphics.set_x1x2y1y2
     g
     ~x1:(xmin -. (xmax -. xmin) /. 10.0)
@@ -154,7 +179,12 @@ let () =
     ~y2:(ymax +. (ymax -. ymin) /. 20.0);
   draw_frame g xmin xmax xstep ymin ymax ystep;
   Graphics.set_color (Graphics.rgb 0 0 0);
-  MyGraphics.draw_poly_line g ary;
+  Array.iteri
+    (fun i yary ->
+       let xyary = array_combine xary yary in
+       Graphics.set_color colors.(i mod (Array.length colors));
+       MyGraphics.draw_poly_line g xyary)
+    ysary;
   Graphics.synchronize ();
   while true do
     let status = Graphics.wait_next_event [Graphics.Key_pressed; Graphics.Button_down] in
