@@ -64,10 +64,10 @@ let array_combine aary bary =
   if na <> nb then raise (invalid_arg "array_combine");
   Array.mapi (fun i a -> (a, bary.(i))) aary
 
-let get_axis_with_n min max n =
+let get_axis_with_n mi ma n =
   let base = 10.0 ** float n in
-  let na = floor (min /. base *. (1.0 +. 1e-9)) in      (* multiply a number slightly beyond 1.0 to avoid an error *)
-  let nb = ceil (max /. base *. (1.0 -. 1e-9)) in       (* multiply a number slightly below 1.0 to avoid an error *)
+  let na = floor (mi /. base *. (1.0 +. 1e-9)) in      (* multiply a number slightly beyond 1.0 to avoid an error *)
+  let nb = ceil (ma /. base *. (1.0 -. 1e-9)) in       (* multiply a number slightly below 1.0 to avoid an error *)
   let a = base *. na in
   let b = base *. nb in
   (a, b, base)
@@ -81,14 +81,14 @@ let rec adjust_base a b base =
   else
     adjust_base a b (base /. 2.0)
 
-let get_axis min max =
-  let n = truncate (ceil (log10 (max -. min))) in
-  let a, b, base = get_axis_with_n min max n in
-  let k = (max -. min) /. (b -. a) in
+let get_axis mi ma =
+  let n = truncate (ceil (log10 (ma -. mi))) in
+  let a, b, base = get_axis_with_n mi ma n in
+  let k = (ma -. mi) /. (b -. a) in
   if k > 0.5 then begin
     adjust_base a b (base /. 10.0)
   end else begin
-    let a, b, base = get_axis_with_n min max (n - 1) in
+    let a, b, base = get_axis_with_n mi ma (n - 1) in
     adjust_base a b base
   end
 
