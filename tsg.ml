@@ -66,8 +66,10 @@ let array_combine aary bary =
 
 let get_axis_with_n mi ma n =
   let base = 10.0 ** float n in
-  let na = floor (mi /. base *. (1.0 +. 1e-9)) in      (* multiply a number slightly beyond 1.0 to avoid an error *)
-  let nb = ceil (ma /. base *. (1.0 -. 1e-9)) in       (* multiply a number slightly below 1.0 to avoid an error *)
+  let da = if mi < 0.0 then -1e-9 else +1e-9 in
+  let na = floor (mi /. base *. (1.0 +. da)) in      (* multiply a number slightly beyond 1.0 to avoid an error *)
+  let db = if ma < 0.0 then +1e-9 else -1e-9 in
+  let nb = ceil (ma /. base *. (1.0 +. db)) in       (* multiply a number slightly below 1.0 to avoid an error *)
   let a = base *. na in
   let b = base *. nb in
   (a, b, base)
