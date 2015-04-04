@@ -46,17 +46,32 @@ module MyGraphics = struct
     Graphics.draw_poly_line ary
 end
 
-let colors =
-  let open Graphics in
-  [|
-    black;
-    green;
-    blue;
-    yellow;
-    cyan;
-    magenta;
-    red;
-  |]
+let min_of_list l =
+  List.fold_left (fun a accum -> if a < accum then a else accum) (List.hd l) l
+
+let max_of_list l =
+  List.fold_left (fun a accum -> if a > accum then a else accum) (List.hd l) l
+
+let rgb_of_hsv h s v =
+  if s = 0.0 then
+    (v, v, v)
+  else begin
+    let hi = int_of_float (h /. 60.0) in
+    let f = h /. 60.0 -. float hi in
+    let p = v *. (1.0 -. s) in
+    let q = v *. (1.0 -. f *. s) in
+    let t = v *. (1.0 -. (1.0 -. f) *. s) in
+
+    match hi with
+    | 0 | 6 -> (v, t, p)
+    | 1 -> (q, v, p)
+    | 2 -> (p, v, t)
+    | 3 -> (p, q, v)
+    | 4 -> (t, p, v)
+    | 5 -> (v, p, q)
+    | _ ->
+        failwith "bug?"
+  end
 
 let array_combine aary bary =
   let na = Array.length aary in
@@ -151,6 +166,16 @@ let draw_frame g xmin xmax xstep ymin ymax ystep =
     Graphics.draw_string s
   done
 
+let rainbow i n =
+  let h = 360.0 *. float i /. float n in
+  let s = 1.0 in
+  let v = 1.0 in
+  let red, green, blue = rgb_of_hsv h s v in
+  let red, green, blue = truncate (red *. 256.0 *. 0.999),
+                         truncate (green *. 256.0 *. 0.999),
+                         truncate (blue *. 256.0 *. 0.999) in
+  (red, green, blue)
+
 let () =
   let opt_geometry = ref "" in
   let opt_rest_args = ref [] in
@@ -180,11 +205,11 @@ let () =
     ~y1:(ymin -. (ymax -. ymin) /. 10.0)
     ~y2:(ymax +. (ymax -. ymin) /. 20.0);
   draw_frame g xmin xmax xstep ymin ymax ystep;
-  Graphics.set_color (Graphics.rgb 0 0 0);
   Array.iteri
     (fun i yary ->
        let xyary = array_combine xary yary in
-       Graphics.set_color colors.(i mod (Array.length colors));
+       let red, green, blue = rainbow i (Array.length ysary - 1) in
+       Graphics.set_color (Graphics.rgb red green blue);
        MyGraphics.draw_poly_line g xyary)
     ysary;
   Graphics.synchronize ();
