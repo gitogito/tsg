@@ -166,6 +166,12 @@ let draw_frame g xmin xmax xstep ymin ymax ystep =
     Graphics.draw_string s
   done
 
+let reduce_brightness (r, g, b) =
+  let a = 0.7 in
+  (truncate (float r *. a),
+   truncate (float g *. a),
+   truncate (float b *. a))
+
 let rainbow i n =
   let h = 360.0 *. float i /. float n in
   let s = 1.0 in
@@ -208,7 +214,7 @@ let () =
   Array.iteri
     (fun i yary ->
        let xyary = array_combine xary yary in
-       let red, green, blue = rainbow i (Array.length ysary - 1) in
+       let red, green, blue = rainbow i (Array.length ysary - 1) |> reduce_brightness in
        Graphics.set_color (Graphics.rgb red green blue);
        MyGraphics.draw_poly_line g xyary)
     ysary;
