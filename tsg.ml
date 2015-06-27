@@ -173,7 +173,7 @@ let reduce_brightness (r, g, b) =
    truncate (float b *. a))
 
 let rainbow i n =
-  let h = 360.0 *. float i /. float n in
+  let h = 360.0 *. float i /. float (n + 1) in
   let s = 1.0 in
   let v = 1.0 in
   let red, green, blue = rgb_of_hsv h s v in
