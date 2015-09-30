@@ -52,6 +52,23 @@ let min_of_list l =
 let max_of_list l =
   List.fold_left (fun a accum -> if a > accum then a else accum) (List.hd l) l
 
+let transpose ary =
+  let nx = Array.length ary in
+  let ny = Array.length ary.(0) in
+  Array.init ny
+    (fun j ->
+       Array.init nx (fun i-> float_of_string ary.(i).(j)))
+
+let load_data ic =
+  let sep = Re_pcre.regexp "\\s+" in
+  input_list ic
+  |> List.map
+       (fun s ->
+          Re_pcre.split ~rex:sep s)
+  |> List.map Array.of_list
+  |> Array.of_list
+  |> transpose
+
 let rgb_of_hsv h s v =
   if s = 0.0 then
     (v, v, v)
@@ -198,9 +215,7 @@ let () =
 
   let g = MyGraphics.init !opt_geometry in
   Graphics.auto_synchronize false;
-  let ary = Csv.load_in ~separator:'\t' stdin |> Csv.transpose |> Csv.to_array |>
-            Array.map (Array.map float_of_string)
-  in
+  let ary = load_data stdin in
   let xary = ary.(0) in
   let ysary = Array.sub ary 1 (Array.length ary - 1) in
   let xmin, xmax, xstep, ymin, ymax, ystep = get_axis_xy xary ysary in

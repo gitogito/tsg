@@ -1,6 +1,6 @@
 RESULT = tsg
 SOURCES = tsg.ml
-PACKS = csv,graphics,extlib
+PACKS = re.pcre,graphics,extlib
 INCDIRS =
 LIBS =
 THREADS = yes
