@@ -116,14 +116,18 @@ let rec adjust_base a b base =
     adjust_base a b (base /. 2.0)
 
 let get_axis mi ma =
-  let n = truncate (ceil (log10 (ma -. mi))) in
-  let a, b, base = get_axis_with_n mi ma n in
-  let k = (ma -. mi) /. (b -. a) in
-  if k > 0.5 then begin
-    adjust_base a b (base /. 10.0)
-  end else begin
-    let a, b, base = get_axis_with_n mi ma (n - 1) in
-    adjust_base a b base
+  if mi = ma then
+    (0.0, mi *. 2.0, 1.0)
+  else begin
+    let n = truncate (ceil (log10 (ma -. mi))) in
+    let a, b, base = get_axis_with_n mi ma n in
+    let k = (ma -. mi) /. (b -. a) in
+    if k > 0.5 then begin
+      adjust_base a b (base /. 10.0)
+    end else begin
+      let a, b, base = get_axis_with_n mi ma (n - 1) in
+      adjust_base a b base
+    end
   end
 
 let get_axis_xy xary ysary =
