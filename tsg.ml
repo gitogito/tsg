@@ -241,7 +241,7 @@ let () =
   while true do
     let status = Graphics.wait_next_event [Graphics.Key_pressed; Graphics.Button_down] in
     begin match status.Graphics.key with
-    | 'q' | 'Q' -> exit 0
+    | 'q' | 'Q' | '\027' -> exit 0
     | _ -> ()
     end;
     if status.Graphics.button then begin
